@@ -78,10 +78,13 @@ Apple Silicon 则使用：
 ./bin/droidforge stop
 ```
 
-`setup` 是上述默认 Android 13/default/宿主 ABI 的快捷方式：
+`setup` 只部署基础环境（Command-line Tools、ADB、Emulator 和许可证），不会下载 Android Platform 或系统镜像：
 
 ```zsh
-./bin/droidforge setup --name baseline
+./bin/droidforge setup
+
+# 再明确选择需要的官方镜像
+./bin/droidforge image install --api 33 --tag default --abi x86_64 --name baseline
 ./bin/droidforge avd create --name research --image baseline
 ```
 

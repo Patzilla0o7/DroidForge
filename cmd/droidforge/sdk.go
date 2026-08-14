@@ -13,13 +13,13 @@ import (
 )
 
 func setup(l lab, args []string) {
-	fs := flag.NewFlagSet("setup", flag.ExitOnError)
-	api := fs.String("api", defaultAPI, "Android API level")
-	tag := fs.String("tag", "default", "system image tag")
-	abi := fs.String("abi", l.abi, "system image ABI")
-	name := fs.String("name", "", "saved image profile name")
-	fs.Parse(args)
-	fatalIf(installOfficial(l, *api, *tag, *abi, *name))
+	if len(args) != 0 {
+		fatalIf(fmt.Errorf("setup does not accept image options; use: droidforge image install --api … --tag … --abi … --name …"))
+	}
+	fatalIf(ensureTools(l))
+	fatalIf(runTool(l, strings.NewReader(strings.Repeat("y\n", 1000)), "sdkmanager", "--licenses"))
+	fatalIf(runTool(l, nil, "sdkmanager", "platform-tools", "emulator"))
+	fmt.Printf("Base SDK environment ready: %s\nNext: droidforge image install --api %s --tag default --name <profile>\n", l.sdk, defaultAPI)
 }
 
 func imageCommand(l lab, args []string) {

@@ -59,7 +59,7 @@ func usage() {
 	fmt.Fprintln(os.Stderr, `DroidForge — macOS Android framework-security lab
 
 Usage:
-  droidforge setup [options]                 Install SDK and one official image profile
+  droidforge setup                           Install SDK tools, ADB, and Emulator
   droidforge image install [options]         Download and register an official image
   droidforge image list                      List registered image profiles
   droidforge build import [options]          Register a custom AOSP image directory
