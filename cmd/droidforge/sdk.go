@@ -72,6 +72,10 @@ func installOfficial(l lab, api, tag, abi, name string) error {
 }
 
 func ensureTools(l lab) error {
+	toolsURL, err := commandLineToolsURL(l.hostOS)
+	if err != nil {
+		return err
+	}
 	if _, err := exec.LookPath("java"); err != nil {
 		return fmt.Errorf("JDK 17+ is required: java not found")
 	}
@@ -88,6 +92,17 @@ func ensureTools(l lab) error {
 		return err
 	}
 	return extractTools(archive, filepath.Join(l.sdk, "cmdline-tools"))
+}
+
+func commandLineToolsURL(hostOS string) (string, error) {
+	switch hostOS {
+	case "darwin":
+		return "https://dl.google.com/android/repository/commandlinetools-mac-15859902_latest.zip", nil
+	case "linux":
+		return "https://dl.google.com/android/repository/commandlinetools-linux-15859902_latest.zip", nil
+	default:
+		return "", fmt.Errorf("unsupported host OS %q; DroidForge supports macOS and Linux", hostOS)
+	}
 }
 
 func runTool(l lab, in io.Reader, name string, args ...string) error {

@@ -2,7 +2,7 @@
 
 > 将 Android 系统镜像构建产物快速锻造成可运行安全研究环境的 macOS 工具链。
 
-DroidForge 是面向 Android Framework 安全研究的 Go CLI。它在项目目录中管理 Android SDK、官方系统镜像 Profile、研究 AVD，以及 Linux 构建的自定义 AOSP 镜像 Profile。
+DroidForge 是面向 Android Framework 安全研究的 Go CLI。它支持 macOS 和 Ubuntu，在项目目录中管理 Android SDK、官方系统镜像 Profile、研究 AVD，以及 Linux 构建的自定义 AOSP 镜像 Profile。
 
 ## 工作模型
 
@@ -15,10 +15,11 @@ Linux AOSP 产物 ── build import ─> 自定义 Profile ── start ──
 - 自定义 Profile 只登记镜像目录的绝对路径，**不会复制或改写** Linux 编译产物。
 - 一个 AVD 从官方 Profile 创建；启动时可选择自定义 Profile 覆盖 system/vendor/ramdisk/kernel 等镜像。
 - Profile 配置保存在本地 `.droidforge/profiles/`，不会提交包含机器路径的研究环境状态。
+- macOS 与 Ubuntu 使用各自的项目内 SDK 目录，避免相互混用宿主平台的 Emulator 二进制。
 
 ## 安装 DroidForge
 
-要求：macOS、Go 1.23+、JDK 17+、网络连接及数 GB 可用空间。
+要求：macOS 或 Ubuntu、Go 1.23+、JDK 17+、网络连接及数 GB 可用空间。
 
 ```zsh
 git clone https://github.com/Patzilla0o7/DroidForge.git
@@ -26,9 +27,40 @@ cd DroidForge
 go build -o bin/droidforge ./cmd/droidforge
 ```
 
+可选：在任意开发机生成 macOS 与 Linux 的发布二进制：
+
+```zsh
+make release
+```
+
+产物位于 `dist/`，包括 Darwin/Linux 的 `amd64` 和 `arm64` 二进制。
+
+## Ubuntu 前置条件
+
+在 Ubuntu x86_64 主机上，先安装 JDK、KVM 与 Emulator 常用运行依赖：
+
+```bash
+sudo apt update
+sudo apt install -y openjdk-17-jdk qemu-kvm libvirt-daemon-system \
+  libvirt-clients libnss3 libpulse0 libglu1-mesa
+sudo usermod -aG kvm,libvirt "$USER"
+```
+
+执行上述用户组变更后需重新登录。然后运行：
+
+```bash
+git clone https://github.com/Patzilla0o7/DroidForge.git
+cd DroidForge
+go build -o bin/droidforge ./cmd/droidforge
+./bin/droidforge setup
+./bin/droidforge doctor
+```
+
+Ubuntu SDK 保存为 `.android-sdk-linux/`；macOS 保存为 `.android-sdk-macos/`。`doctor` 会在 Linux 中检查当前用户能否访问 `/dev/kvm`。KVM 不可用时可以调试，但 x86/x86_64 模拟会非常慢。
+
 ## 官方镜像：下载、分类和启动
 
-首次安装一个 Android 13/API 33 的干净 x86_64 镜像（Intel Mac）：
+首次安装一个 Android 13/API 33 的干净 x86_64 镜像（Intel Mac 或 Ubuntu x86_64）：
 
 ```zsh
 ./bin/droidforge image install \
@@ -38,7 +70,7 @@ go build -o bin/droidforge ./cmd/droidforge
   --name aosp13-intel
 ```
 
-Apple Silicon 则使用：
+Apple Silicon 或 Ubuntu ARM64 则使用：
 
 ```zsh
 ./bin/droidforge image install \
@@ -90,7 +122,7 @@ Apple Silicon 则使用：
 
 ## 自编译 AOSP 镜像：导入与启动
 
-在 Linux 上构建时，ABI 应与测试目标相容：Intel Mac 通常使用 `aosp_x86_64-eng`，Apple Silicon 通常使用 `aosp_arm64-eng`。将最终产物同步到项目内，例如：
+在 Linux 上构建时，ABI 应与测试目标相容：Intel Mac/Ubuntu x86_64 通常使用 `aosp_x86_64-eng`，Apple Silicon/Ubuntu ARM64 通常使用 `aosp_arm64-eng`。将最终产物同步到项目内，例如：
 
 ```text
 artifacts/aosp13-dev-20260814/
@@ -138,4 +170,4 @@ go test ./cmd/droidforge
 go vet ./cmd/droidforge
 ```
 
-`.android-sdk-macos/`、`artifacts/`、`bin/` 和 `.droidforge/` 均被 Git 忽略。
+`.android-sdk-macos/`、`.android-sdk-linux/`、`artifacts/`、`bin/`、`dist/` 和 `.droidforge/` 均被 Git 忽略。

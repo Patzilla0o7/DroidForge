@@ -101,7 +101,7 @@ func start(l lab, args []string) {
 	avd := fs.String("avd", l.defaultAVD, "AVD name")
 	image := fs.String("image", "", "registered image profile name")
 	imageDir := fs.String("image-dir", "", "custom image directory (legacy shorthand)")
-	gpu := fs.String("gpu", defaultGPU, "emulator GPU mode")
+	gpu := fs.String("gpu", l.defaultGPU, "emulator GPU mode")
 	wipe := fs.Bool("wipe-data", false, "clear AVD data")
 	cold := fs.Bool("cold-boot", false, "disable snapshot loading")
 	headless := fs.Bool("no-window", false, "run headless")
@@ -176,7 +176,7 @@ func hasAVD(name string) bool {
 }
 
 func doctor(l lab) {
-	fmt.Printf("Project: %s\nSDK: %s\nHost ABI: %s\n", l.root, l.sdk, l.abi)
+	fmt.Printf("Project: %s\nHost: %s/%s\nSDK: %s\nDefault GPU: %s\n", l.root, l.hostOS, l.abi, l.sdk, l.defaultGPU)
 	for _, item := range []struct{ name, path string }{{"sdkmanager", l.tool("cmdline-tools", "latest", "bin", "sdkmanager")}, {"emulator", l.tool("emulator", "emulator")}, {"adb", l.tool("platform-tools", "adb")}} {
 		_, err := os.Stat(item.path)
 		state := "missing"
@@ -190,6 +190,15 @@ func doctor(l lab) {
 	fmt.Printf("Profiles: %d\n", len(profiles))
 	for _, p := range profiles {
 		fmt.Printf("  %-22s %s\n", p.Name, profileLocation(p))
+	}
+	if l.hostOS == "linux" {
+		kvm, err := os.Open("/dev/kvm")
+		if err != nil {
+			fmt.Printf("KVM: unavailable (%v)\n", err)
+		} else {
+			kvm.Close()
+			fmt.Println("KVM: ready")
+		}
 	}
 }
 

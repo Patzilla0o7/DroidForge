@@ -43,3 +43,15 @@ func TestCustomImageArgs(t *testing.T) {
 		t.Fatalf("got %d args, want 6: %v", len(args), args)
 	}
 }
+
+func TestCommandLineToolsURL(t *testing.T) {
+	for _, hostOS := range []string{"darwin", "linux"} {
+		url, err := commandLineToolsURL(hostOS)
+		if err != nil || url == "" {
+			t.Fatalf("%s: url=%q err=%v", hostOS, url, err)
+		}
+	}
+	if _, err := commandLineToolsURL("windows"); err == nil {
+		t.Fatal("expected unsupported OS error")
+	}
+}

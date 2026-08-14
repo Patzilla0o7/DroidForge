@@ -2,4 +2,5 @@
 .android-sdk-macos/
 artifacts/
 bin/
+dist/
 .droidforge/

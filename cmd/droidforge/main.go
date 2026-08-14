@@ -9,11 +9,9 @@ import (
 
 const (
 	defaultAPI = "33"
-	toolsURL   = "https://dl.google.com/android/repository/commandlinetools-mac-13114758_latest.zip"
-	defaultGPU = "swiftshader"
 )
 
-type lab struct{ root, sdk, abi, defaultAVD string }
+type lab struct{ root, sdk, abi, hostOS, defaultAVD, defaultGPU string }
 
 func main() {
 	root, err := os.Getwd()
@@ -45,11 +43,16 @@ func main() {
 }
 
 func newLab(root string) lab {
+	hostOS := runtime.GOOS
 	abi := "x86_64"
 	if runtime.GOARCH == "arm64" {
 		abi = "arm64-v8a"
 	}
-	return lab{root: root, sdk: filepath.Join(root, ".android-sdk-macos"), abi: abi, defaultAVD: "aosp13-security-" + abi}
+	sdkDir, gpu := ".android-sdk-macos", "swiftshader"
+	if hostOS == "linux" {
+		sdkDir, gpu = ".android-sdk-linux", "auto"
+	}
+	return lab{root: root, sdk: filepath.Join(root, sdkDir), abi: abi, hostOS: hostOS, defaultAVD: "aosp13-security-" + abi, defaultGPU: gpu}
 }
 
 func (l lab) profilesDir() string         { return filepath.Join(l.root, ".droidforge", "profiles") }
