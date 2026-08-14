@@ -1,0 +1,4 @@
+.DS_Store
+.android-sdk-macos/
+artifacts/
+bin/
