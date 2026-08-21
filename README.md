@@ -19,7 +19,7 @@ Linux AOSP 产物 ── build import ─> 自定义 Profile ── start ──
 
 ## 安装 DroidForge
 
-要求：macOS 或 Ubuntu、Go 1.23+、JDK 17+、网络连接及数 GB 可用空间。
+要求：macOS 或 Ubuntu、Go 1.22+、JDK 17+、网络连接及数 GB 可用空间。
 
 ```zsh
 git clone https://github.com/Patzilla0o7/DroidForge.git
